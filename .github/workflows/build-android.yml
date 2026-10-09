@@ -41,10 +41,12 @@ jobs:
           "$SDKMANAGER" --version
 
       - name: Accept Android SDK licenses
-        run: yes | "$SDKMANAGER" --licenses > /dev/null || true
+        run: |
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
 
       - name: Install Android SDK 35
-        run: "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+        run: |
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Set up Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
@@ -52,10 +54,12 @@ jobs:
           gradle-version: "8.9"
 
       - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
+        run: |
+          gradle :app:assembleDebug --stacktrace
 
       - name: Create SHA-256
-        run: sha256sum app/build/outputs/apk/debug/app-debug.apk > app-debug.apk.sha256
+        run: |
+          sha256sum app/build/outputs/apk/debug/app-debug.apk > app-debug.apk.sha256
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
