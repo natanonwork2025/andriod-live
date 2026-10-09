@@ -1,0 +1,9 @@
+package com.multilive.agent
+import android.app.Activity
+import android.os.Bundle
+import android.view.ViewGroup
+import android.widget.*
+class MediaPreviewActivity:Activity(){private lateinit var video:VideoView;private lateinit var store:MediaPlaylistStore;private var items=emptyList<android.net.Uri>();private var index=0;private var retries=0
+ override fun onCreate(b:Bundle?){super.onCreate(b);store=MediaPlaylistStore(this);items=store.list();val root=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(18,18,18,18);setBackgroundColor(android.graphics.Color.rgb(5,8,14))};video=VideoView(this);root.addView(video,LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,0,1f));val status=TextView(this).apply{setTextColor(android.graphics.Color.WHITE)};root.addView(status);val row=LinearLayout(this);val prev=Button(this).apply{text="PREV"};val next=Button(this).apply{text="NEXT"};val retry=Button(this).apply{text="RETRY"};row.addView(prev);row.addView(next);row.addView(retry);root.addView(row);setContentView(root);fun update(){status.text=if(items.isEmpty())"No media selected" else "${index+1}/${items.size} • loop ${if(store.loop)"ON" else "OFF"}"};fun play(){if(items.isEmpty()){update();return};video.setVideoURI(items[index]);video.setOnPreparedListener{retries=0;it.isLooping=false;video.start();update()};video.setOnCompletionListener{if(index<items.lastIndex){index++;play()}else if(store.loop){index=0;play()}else update()};video.setOnErrorListener{_,_,_->if(retries<3){retries++;video.postDelayed({play()},1500L*retries)}else if(items.size>1){index=(index+1)%items.size;retries=0;video.postDelayed({play()},1500)};true};video.start()};prev.setOnClickListener{if(items.isNotEmpty()){index=(index-1+items.size)%items.size;play()}};next.setOnClickListener{if(items.isNotEmpty()){index=(index+1)%items.size;play()}};retry.setOnClickListener{retries=0;play()};play()}
+ override fun onPause(){video.pause();super.onPause()}
+}
